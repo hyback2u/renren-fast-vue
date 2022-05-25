@@ -8,6 +8,9 @@
       show-checkbox
       node-key="catId"
       :default-expanded-keys="expandedKeys"
+      draggable
+      :allow-drop="allowDrop"
+      @node-drop="handleDrop"
     >
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
@@ -75,6 +78,10 @@ export default {
   props: {},
   data() {
     return {
+      // 拖拽后需要修改的数据
+      updateNodes: [],
+      // maxLevel最大节点
+      maxLevel: 0,
       // 这里，真正的数据要发送请求从后台数据库获取
       menus: [],
       // 默认要展开的节点
@@ -111,6 +118,121 @@ export default {
     handleNodeClick(data) {
       console.log(data);
     },
+
+    // 拖拽成功后的后续逻辑回调处理, 拖拽成功后会触发该函数
+    handleDrop(draggingNode, dropNode, dropType, ev) {
+      console.log("handleDrop: ", draggingNode, dropNode, dropType);
+
+      // 1、当前节点最新父节点的id
+      let draggingNodeParentCId = 0;
+      let siblings = null;
+
+      if (dropType == "before" || dropType == "after") {
+        draggingNodeParentCId =
+          dropNode.parent.data.catId == undefined
+            ? 0
+            : dropNode.parent.data.catId;
+        siblings = dropNode.parent.childNodes;
+      } else {
+        // todo 为啥有时候取data, 有时候直接取不用data呀？
+        // ===> node不取data, 走的是Node节点的数据结构, 否则, 走的是自定义Java模型的数据结构
+        draggingNodeParentCId = dropNode.data.catId;
+        siblings = dropNode.childNodes;
+      }
+
+      // 2、当前拖拽节点的最新顺序
+      // if (dropType == "inner") {
+      //   siblings = dropNode.childCategoryEntity;
+      // } else {
+      //   siblings = dropNode.parent.childCategoryEntity;
+      // }
+      // 排序
+      for (let i = 0; i < siblings.length; i++) {
+        // 拖拽还可能会改变父子关系id
+        if (siblings[i].data.catId == draggingNode.data.catId) {
+          // 如果遍历的是当前正在拖拽的节点, 不仅改变顺序, 还要改变父id --> 还有层级
+          // draggingNodeDefaultCatLevel:当前节点默认层级
+          let draggingNodeDefaultCatLevel = draggingNode.level;
+          if (siblings[i].level == draggingNode.level) {
+            console.log("当前节点的层级发生变化");
+            // 1、修改当前节点的层级
+            draggingNodeDefaultCatLevel = siblings[i];
+            // if (dropType == "before" || drop == "after") {
+            //   draggingNodeDefaultCatLevel = dropNode.level;
+            // } else {
+            //   draggingNodeDefaultCatLevel = dropNode.level + 1;
+            // }
+            // 2、修改子节点的层级(递归修改) --> 写一个方法
+            this.updateChildNodeLevel(siblings[i]);
+          }
+          this.updateNodes.push({
+            catId: siblings[i].data.catId,
+            sort: i,
+            parentCid: draggingNodeParentCId,
+          });
+        } else {
+          this.updateNodes.push({ catId: siblings[i].data.catId, sort: i });
+        }
+      }
+
+      // 3、当前拖拽节点的最新层级
+
+      console.log("updateNodes", this.updateNodes);
+    },
+
+    // 修改子节点的NodeLevel
+    updateChildNodeLevel(node) {
+      if (node.childNodes.length > 0) {
+        for (let i = 0; i < node.childNodes.length; i++) {
+          var cNode = node.childNodes[i].data;
+          this.updateNodes.push({
+            catId: cNode.catId,
+            catLevel: node.childNodes[i].level,
+          });
+          this.updateChildNodeLevel(node.childNodes[i]);
+        }
+      }
+    },
+
+    // 通过返回true/false判断来进行判断是否可以被拖拽
+    allowDrop(draggingNode, dropNode, type) {
+      // 1、被拖动的当前节点以及所在的父节点，总层数不能大于3
+
+      // 2、被拖动的当前节点(draggingNode)总层数
+      console.log("allowDrop: ", draggingNode, dropNode, type);
+
+      // 抽象出计算节点总层数的方法countNodeLevel()
+      this.countNodeLevel(draggingNode.data);
+
+      // 当前正在拖动的节点 + 父节点所在的深度不大于3即可
+      console.log("深度：", this.maxLevel);
+      let deep = this.maxLevel - draggingNode.data.catLevel + 1;
+      console.log("deep", deep);
+
+      if (type == "inner") {
+        // 注意这里是节点的level, 并不是节点data里的catLevel
+        return deep + dropNode.level <= 3;
+      } else {
+        return deep + dropNode.parent.level <= 3;
+      }
+    },
+
+    // 抽象出计算节点总层数的方法
+    countNodeLevel(node) {
+      // 说明有子节点
+      if (
+        node.childCategoryEntity != null &&
+        node.childCategoryEntity.length > 0
+      ) {
+        for (let i = 0; i < node.childCategoryEntity.length; i++) {
+          if (node.childCategoryEntity[i].catLevel > this.maxLevel) {
+            this.maxLevel = node.childCategoryEntity[i].catLevel;
+          }
+          this.countNodeLevel(node.childCategoryEntity[i]);
+        }
+      }
+    },
+
     getMenus() {
       this.$http({
         url: this.$http.adornUrl("/product/category/list/tree"),
@@ -258,21 +380,21 @@ export default {
       });
     },
   },
-  //生命周期 - 创建完成（可以访问当前 this 实例）
+  // 生命周期 - 创建完成（可以访问当前 this 实例）
   created() {
     this.getMenus();
   },
-  //生命周期 - 挂载完成（可以访问 DOM 元素）
+  // 生命周期 - 挂载完成（可以访问 DOM 元素）
   mounted() {},
-  beforeCreate() {}, //生命周期 - 创建之前
-  beforeMount() {}, //生命周期 - 挂载之前
-  beforeUpdate() {}, //生命周期 - 更新之前
-  updated() {}, //生命周期 - 更新之后
-  beforeDestroy() {}, //生命周期 - 销毁之前
-  destroyed() {}, //生命周期 - 销毁完成
-  activated() {}, //如果页面有 keep-alive 缓存功能，这个函数会触发
+  beforeCreate() {}, // 生命周期 - 创建之前
+  beforeMount() {}, // 生命周期 - 挂载之前
+  beforeUpdate() {}, // 生命周期 - 更新之前
+  updated() {}, // 生命周期 - 更新之后
+  beforeDestroy() {}, // 生命周期 - 销毁之前
+  destroyed() {}, // 生命周期 - 销毁完成
+  activated() {}, // 如果页面有 keep-alive 缓存功能，这个函数会触发
 };
 </script>
 <style lang='scss' scoped>
-//@import url(); 引入公共 css 类
+// @import url(); 引入公共 css 类
 </style>
