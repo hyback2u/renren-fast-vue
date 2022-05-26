@@ -20,18 +20,15 @@
             type="text"
             size="mini"
             @click="() => append(data)"
-          >
-            添加
+            >添加
           </el-button>
           <el-button
             v-if="node.childNodes.length == 0"
             type="text"
             size="mini"
             @click="() => remove(node, data)"
-          >
-            删除
+            >删除
           </el-button>
-
           <el-button type="text" size="mini" @click="() => edit(data)">
             编辑
           </el-button>
@@ -169,6 +166,7 @@ export default {
             catId: siblings[i].data.catId,
             sort: i,
             parentCid: draggingNodeParentCId,
+            catLevel: draggingNodeDefaultCatLevel,
           });
         } else {
           this.updateNodes.push({ catId: siblings[i].data.catId, sort: i });
@@ -176,8 +174,18 @@ export default {
       }
 
       // 3、当前拖拽节点的最新层级
-
       console.log("updateNodes", this.updateNodes);
+
+      this.$http({
+        url: this.$http.adornUrl("/product/category/update/sort"),
+        method: "post",
+        data: this.$http.adornData(this.updateNodes, false),
+      }).then(({ data }) => {
+        this.$message({
+          message: "菜单拖拽成功",
+          type: "success",
+        });
+      });
     },
 
     // 修改子节点的NodeLevel
@@ -202,7 +210,7 @@ export default {
       console.log("allowDrop: ", draggingNode, dropNode, type);
 
       // 抽象出计算节点总层数的方法countNodeLevel()
-      this.countNodeLevel(draggingNode.data);
+      this.countNodeLevel(draggingNode);
 
       // 当前正在拖动的节点 + 父节点所在的深度不大于3即可
       console.log("深度：", this.maxLevel);
@@ -217,18 +225,15 @@ export default {
       }
     },
 
-    // 抽象出计算节点总层数的方法
+    // 抽象出计算节点总层数的方法, 入参是Node
     countNodeLevel(node) {
       // 说明有子节点
-      if (
-        node.childCategoryEntity != null &&
-        node.childCategoryEntity.length > 0
-      ) {
-        for (let i = 0; i < node.childCategoryEntity.length; i++) {
-          if (node.childCategoryEntity[i].catLevel > this.maxLevel) {
-            this.maxLevel = node.childCategoryEntity[i].catLevel;
+      if (node.childNodes != null && node.childNodes.length > 0) {
+        for (let i = 0; i < node.childNodes.length; i++) {
+          if (node.childNodes[i].level > this.maxLevel) {
+            this.maxLevel = node.childNodes[i].level;
           }
-          this.countNodeLevel(node.childCategoryEntity[i]);
+          this.countNodeLevel(node.childNodes[i]);
         }
       }
     },
