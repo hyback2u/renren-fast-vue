@@ -1,9 +1,15 @@
 <template>
   <div>
+    <el-switch v-model="draggable" active-text="开启拖拽" inactive-text="关闭拖拽"></el-switch>
+    <el-button :disabled="!draggable" @click="batchSave" type="primary" size="medium">保存拖拽</el-button>
+    <el-button @click="batchDelete" type="danger" size="medium">批量删除</el-button>
     <el-tree :data="menus" :props="defaultProps" @node-click="handleNodeClick"
              :expand-on-click-node="false" show-checkbox node-key="catId"
-             :default-expanded-keys="expandedKeys" draggable :allow-drop="allowDrop"
-             @node-drop="handleDrop">
+             :default-expanded-keys="expandedKeys"
+             :draggable="draggable"
+             :allow-drop="allowDrop"
+             @node-drop="handleDrop"
+             ref="menuTree">
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
         <span>
@@ -47,6 +53,8 @@ export default {
   props: {},
   data () {
     return {
+      // 是否开启拖拽, 默认是不可以拖拽的
+      draggable: false,
       // 拖拽后需要修改的数据
       updateNodes: [],
       // maxLevel最大节点
@@ -86,6 +94,59 @@ export default {
   methods: {
     handleNodeClick (data) {
       console.log(data)
+    },
+
+    /**
+     * 获取到选中的节点, 进行批量删除
+     */
+    batchDelete () {
+      console.log('Trigger batchDelete()')
+
+      // 选中的节点
+      let checkedNodes = this.$refs.menuTree.getCheckedNodes()
+      console.log('checkedNodes: ', checkedNodes)
+      console.log('checkedNodes NameList: ', checkedNodes.map(x => x.name))
+
+      // 将选中节点的ID组装成ID集合发给后端进行删除
+      let deletedCategoryIds = []
+      for (let i = 0; i < checkedNodes.length; i++) {
+        deletedCategoryIds.push(checkedNodes[i].catId)
+      }
+
+      // 给出操作提示
+      this.$confirm(`是否批量删除【${checkedNodes.map(x => x.name)}】菜单？`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        // 调用后端删除逻辑
+        this.$http({
+          url: this.$http.adornUrl('/product/category/delete'),
+          method: 'post',
+          data: this.$http.adornData(deletedCategoryIds, false)
+        }).then(() => {
+          // 删除成功, 前端给出提示
+          this.$message({
+            message: '菜单批量删除成功',
+            center: true,
+            type: 'success'
+          })
+          // 删除之后, 刷新菜单
+          this.getMenus()
+        })
+      }).catch(() => {
+        // 取消删除
+        this.$message({
+          message: '取消批量删除菜单',
+          center: true,
+          type: 'info'
+        })
+      })
+    },
+
+    // 点击按钮的时候调用
+    batchSave () {
+
     },
 
     /**
