@@ -38,7 +38,7 @@
 </template>
 
 <script>
-// 这里可以导入其他文件（比如：组件，工具 js，第三方插件 js，json文件，图片文件等等）
+// 这里可以导入其他文件(比如：组件，工具 js，第三方插件 js，json文件，图片文件等等)
 // 例如：import 《组件名称》 from '《组件路径》';
 
 export default {
@@ -172,7 +172,7 @@ export default {
     updateChildNodeLevel (node) {
       if (node.childNodes.length > 0) {
         for (let i = 0; i < node.childNodes.length; i++) {
-          var cNode = node.childNodes[i].data
+          const cNode = node.childNodes[i].data
           this.updateNodes.push({
             catId: cNode.catId,
             catLevel: node.childNodes[i].level
@@ -271,7 +271,7 @@ export default {
      */
     remove (node, data) {
       console.log('remove button click', node, data)
-      var ids = [data.catId]
+      const ids = [data.catId]
 
       this.$confirm(`是否删除【${data.name}】菜单?`, '提示', {
         confirmButtonText: '确定',
@@ -376,7 +376,7 @@ export default {
      * 点击确认, 修改三级分类数据
      */
     editCategory () {
-      var {catId, name, icon, productUnit} = this.category
+      const {catId, name, icon, productUnit} = this.category
 
       this.$http({
         url: this.$http.adornUrl('/product/category/update'),
