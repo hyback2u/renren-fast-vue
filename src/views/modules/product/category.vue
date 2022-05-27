@@ -101,7 +101,7 @@ export default {
      * feature: 获取到选中的节点, 进行批量删除
      */
     batchDelete () {
-      console.log('Trigger batchDelete()')
+      console.log('--------> Trigger batchDelete()')
 
       // checkedNodes:选中的节点, 通过标签自带的方法getCheckedNodes()获取
       let checkedNodes = this.$refs.menuTree.getCheckedNodes()
@@ -150,7 +150,7 @@ export default {
      * feature: 批量提交拖拽后需要修改数据的节点数据给后端, 批量保存更新
      */
     batchUpdateDrop () {
-
+      console.log('--------> Trigger batchUpdateDrop()')
     },
 
     /**
@@ -162,6 +162,7 @@ export default {
      * @param ev x
      */
     handleDrop (draggingNode, dropNode, dropType, ev) {
+      console.log('Trigger handleDrop()')
       console.log('handleDrop: ', draggingNode, dropNode, dropType)
 
       // 1、当前节点最新父节点的id
@@ -235,6 +236,7 @@ export default {
      * @param node
      */
     updateChildNodeLevel (node) {
+      console.log('Trigger updateChildNodeLevel()')
       if (node.childNodes.length > 0) {
         for (let i = 0; i < node.childNodes.length; i++) {
           const cNode = node.childNodes[i].data
@@ -256,6 +258,7 @@ export default {
      * @returns {boolean}
      */
     allowDrop (draggingNode, dropNode, type) {
+      console.log('Trigger allowDrop()')
       // 1、被拖动的当前节点以及所在的父节点，总层数不能大于3
 
       // 2、被拖动的当前节点(draggingNode)总层数
@@ -297,6 +300,7 @@ export default {
      * 获取菜单
      */
     getMenus () {
+      console.log('Trigger getMenus()')
       this.$http({
         url: this.$http.adornUrl('/product/category/list/tree'),
         method: 'get'
@@ -311,6 +315,7 @@ export default {
      * @param data
      */
     append (data) {
+      console.log('Trigger append()')
       console.log('append button click', data)
 
       this.dialogType = 'append'
@@ -335,6 +340,7 @@ export default {
      * @param data
      */
     remove (node, data) {
+      console.log('--------> Trigger remove()')
       console.log('remove button click', node, data)
       const ids = [data.catId]
 
@@ -375,6 +381,7 @@ export default {
      * @param data
      */
     edit (data) {
+      console.log('--------> Trigger edit()')
       console.log('要修改的数据：', data)
       this.dialogTitle = '修改分类'
 
