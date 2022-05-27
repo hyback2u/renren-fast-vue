@@ -1,47 +1,22 @@
 <template>
   <div>
-    <el-tree
-      :data="menus"
-      :props="defaultProps"
-      @node-click="handleNodeClick"
-      :expand-on-click-node="false"
-      show-checkbox
-      node-key="catId"
-      :default-expanded-keys="expandedKeys"
-      draggable
-      :allow-drop="allowDrop"
-      @node-drop="handleDrop"
-    >
+    <el-tree :data="menus" :props="defaultProps" @node-click="handleNodeClick"
+             :expand-on-click-node="false" show-checkbox node-key="catId"
+             :default-expanded-keys="expandedKeys" draggable :allow-drop="allowDrop"
+             @node-drop="handleDrop">
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
         <span>
-          <el-button
-            v-if="node.level <= 2"
-            type="text"
-            size="mini"
-            @click="() => append(data)"
-          >添加
-          </el-button>
-          <el-button
-            v-if="node.childNodes.length === 0"
-            type="text"
-            size="mini"
-            @click="() => remove(node, data)"
-          >删除
-          </el-button>
-          <el-button type="text" size="mini" @click="() => edit(data)">
-            编辑
-          </el-button>
+          <el-button v-if="node.level <= 2" type="text" size="mini" @click="() => append(data)">添加</el-button>
+          <el-button v-if="node.childNodes.length === 0" type="text" size="mini"
+                     @click="() => remove(node, data)">删除</el-button>
+          <el-button type="text" size="mini" @click="() => edit(data)">编辑</el-button>
         </span>
       </span>
     </el-tree>
 
-    <el-dialog
-      :title="dialogTitle"
-      :visible.sync="dialogVisible"
-      width="30%"
-      :close-on-click-modal="false"
-    >
+    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="30%"
+               :close-on-click-modal="false">
       <el-form :model="category">
         <el-form-item label="分类名称">
           <el-input v-model="category.name" autocomplete="off"></el-input>
@@ -50,10 +25,7 @@
           <el-input v-model="category.icon" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="计量单位">
-          <el-input
-            v-model="category.productUnit"
-            autocomplete="off"
-          ></el-input>
+          <el-input v-model="category.productUnit" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
 
@@ -116,7 +88,14 @@ export default {
       console.log(data)
     },
 
-    // 拖拽成功后的后续逻辑回调处理, 拖拽成功后会触发该函数
+    /**
+     * 拖拽成功后的后续逻辑回调处理, 拖拽成功后会触发该函数
+     *
+     * @param draggingNode x
+     * @param dropNode x
+     * @param dropType x
+     * @param ev x
+     */
     handleDrop (draggingNode, dropNode, dropType, ev) {
       console.log('handleDrop: ', draggingNode, dropNode, dropType)
 
@@ -125,10 +104,7 @@ export default {
       let siblings = null
 
       if (dropType === 'before' || dropType === 'after') {
-        draggingNodeParentCId =
-          dropNode.parent.data.catId === undefined
-            ? 0
-            : dropNode.parent.data.catId
+        draggingNodeParentCId = dropNode.parent.data.catId === undefined ? 0 : dropNode.parent.data.catId
         siblings = dropNode.parent.childNodes
       } else {
         // todo 为啥有时候取data, 有时候直接取不用data呀？
@@ -188,7 +164,11 @@ export default {
       })
     },
 
-    // 修改子节点的NodeLevel
+    /**
+     * 修改子节点的NodeLevel
+     *
+     * @param node
+     */
     updateChildNodeLevel (node) {
       if (node.childNodes.length > 0) {
         for (let i = 0; i < node.childNodes.length; i++) {
@@ -202,7 +182,14 @@ export default {
       }
     },
 
-    // 通过返回true/false判断来进行判断是否可以被拖拽
+    /**
+     * 通过返回true/false判断来进行判断是否可以被拖拽
+     *
+     * @param draggingNode
+     * @param dropNode
+     * @param type
+     * @returns {boolean}
+     */
     allowDrop (draggingNode, dropNode, type) {
       // 1、被拖动的当前节点以及所在的父节点，总层数不能大于3
 
@@ -225,7 +212,10 @@ export default {
       }
     },
 
-    // 抽象出计算节点总层数的方法, 入参是Node
+    /**
+     * 抽象出计算节点总层数的方法, 入参是Node
+     * @param node
+     */
     countNodeLevel (node) {
       // 说明有子节点
       if (node.childNodes != null && node.childNodes.length > 0) {
@@ -238,6 +228,9 @@ export default {
       }
     },
 
+    /**
+     * 获取菜单
+     */
     getMenus () {
       this.$http({
         url: this.$http.adornUrl('/product/category/list/tree'),
@@ -247,6 +240,11 @@ export default {
         this.menus = data.data
       })
     },
+
+    /**
+     * append
+     * @param data
+     */
     append (data) {
       console.log('append button click', data)
 
@@ -265,6 +263,12 @@ export default {
       this.category.showStatus = 1
     },
 
+    /**
+     * 删除
+     *
+     * @param node
+     * @param data
+     */
     remove (node, data) {
       console.log('remove button click', node, data)
       var ids = [data.catId]
@@ -300,7 +304,11 @@ export default {
         })
     },
 
-    // 修改
+    /**
+     * 修改
+     *
+     * @param data
+     */
     edit (data) {
       console.log('要修改的数据：', data)
       this.dialogTitle = '修改分类'
@@ -325,7 +333,9 @@ export default {
       this.category.catId = data.catId
     },
 
-    // 策略, 添加还是修改
+    /**
+     * 策略, 添加还是修改
+     */
     submitData () {
       if (this.dialogType === 'append') {
         this.addCategory()
@@ -335,7 +345,9 @@ export default {
       }
     },
 
-    // 点击确认, 向数据库执行添加三级分类
+    /**
+     * 点击确认, 向数据库执行添加三级分类
+     */
     addCategory () {
       console.log('提交的三级分类数据：', this.category)
 
@@ -360,7 +372,9 @@ export default {
       })
     },
 
-    // 点击确认, 修改三级分类数据
+    /**
+     * 点击确认, 修改三级分类数据
+     */
     editCategory () {
       var {catId, name, icon, productUnit} = this.category
 
