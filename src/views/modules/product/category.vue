@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-switch v-model="draggable" active-text="开启拖拽" inactive-text="关闭拖拽"></el-switch>
-    <el-button :disabled="!draggable" @click="batchSave" type="primary" size="medium">保存拖拽</el-button>
+    <el-button :disabled="!draggable" @click="batchUpdateDrop" type="primary" size="medium">保存拖拽</el-button>
     <el-button @click="batchDelete" type="danger" size="medium">批量删除</el-button>
     <el-tree :data="menus" :props="defaultProps" @node-click="handleNodeClick"
              :expand-on-click-node="false" show-checkbox node-key="catId"
@@ -97,7 +97,8 @@ export default {
     },
 
     /**
-     * 获取到选中的节点, 进行批量删除
+     * trigger: 点击 “批量删除” 按钮
+     * feature: 获取到选中的节点, 进行批量删除
      */
     batchDelete () {
       console.log('Trigger batchDelete()')
@@ -144,8 +145,11 @@ export default {
       })
     },
 
-    // 点击按钮的时候调用
-    batchSave () {
+    /**
+     * trigger: 点击 “保存拖拽” 按钮
+     * feature: 批量提交拖拽后需要修改数据的节点数据给后端, 批量保存更新
+     */
+    batchUpdateDrop () {
 
     },
 
@@ -217,7 +221,7 @@ export default {
         url: this.$http.adornUrl('/product/category/update/sort'),
         method: 'post',
         data: this.$http.adornData(this.updateNodes, false)
-      }).then(({data}) => {
+      }).then(() => {
         this.$message({
           message: '菜单拖拽成功',
           type: 'success'
@@ -344,7 +348,7 @@ export default {
             url: this.$http.adornUrl('/product/category/delete'),
             method: 'post',
             data: this.$http.adornData(ids, false)
-          }).then(({data}) => {
+          }).then(() => {
             console.log('删除成功')
             // 删除成功后, 重新请求所有的菜单并展示
             this.$message({
@@ -416,7 +420,7 @@ export default {
         url: this.$http.adornUrl('/product/category/save'),
         method: 'post',
         data: this.$http.adornData(this.category, false)
-      }).then(({data}) => {
+      }).then(() => {
         console.log('添加分类成功')
         // 添加分类成功, 重新请求所有的菜单并展示
         this.$message({
@@ -443,7 +447,7 @@ export default {
         url: this.$http.adornUrl('/product/category/update'),
         method: 'post',
         data: this.$http.adornData({catId, name, icon, productUnit}, false)
-      }).then(({data}) => {
+      }).then(() => {
         console.log('分类修改成功')
         // 分类修改成功, 重新请求所有的菜单并展示
         this.$message({
