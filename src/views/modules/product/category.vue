@@ -102,40 +102,40 @@ export default {
     batchDelete () {
       console.log('Trigger batchDelete()')
 
-      // 选中的节点
+      // checkedNodes:选中的节点, 通过标签自带的方法getCheckedNodes()获取
       let checkedNodes = this.$refs.menuTree.getCheckedNodes()
       console.log('checkedNodes: ', checkedNodes)
       console.log('checkedNodes NameList: ', checkedNodes.map(x => x.name))
 
-      // 将选中节点的ID组装成ID集合发给后端进行删除
+      // 将选中节点的ID组装成ID集合deletedCategoryIds
       let deletedCategoryIds = []
       for (let i = 0; i < checkedNodes.length; i++) {
         deletedCategoryIds.push(checkedNodes[i].catId)
       }
 
-      // 给出操作提示
+      // 1、给出操作提示
       this.$confirm(`是否批量删除【${checkedNodes.map(x => x.name)}】菜单？`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        // 调用后端删除逻辑
+        // 2、调用后端删除逻辑
         this.$http({
           url: this.$http.adornUrl('/product/category/delete'),
           method: 'post',
           data: this.$http.adornData(deletedCategoryIds, false)
         }).then(() => {
-          // 删除成功, 前端给出提示
+          // 2.1 删除成功, 前端给出提示
           this.$message({
             message: '菜单批量删除成功',
             center: true,
             type: 'success'
           })
-          // 删除之后, 刷新菜单
+          // 2.2 删除之后, 刷新菜单
           this.getMenus()
         })
       }).catch(() => {
-        // 取消删除
+        // 3、取消删除, 给出提示
         this.$message({
           message: '取消批量删除菜单',
           center: true,
