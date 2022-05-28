@@ -107,6 +107,7 @@ export default {
   props: {},
   data () {
     return {
+      catId: 0,
       dataForm: {
         key: ''
       },
@@ -136,13 +137,20 @@ export default {
       console.log('--------> Trigger treeNodeClick()')
       console.log('attr-group感知到category节点被点击: ', data, node, component)
       console.log('刚才被点击的节点菜单的id: ', data.catId)
+
+      // 点击三级分类, 才会查
+      if (node.level === 3) {
+        this.catId = data.catId
+        // 重新调用查询
+        this.getDataList()
+      }
     },
 
     // 获取数据列表
     getDataList () {
       this.dataListLoading = true
       this.$http({
-        url: this.$http.adornUrl('/product/attrgroup/list'),
+        url: this.$http.adornUrl(`/product/attrgroup/list/${this.catId}`),
         method: 'get',
         params: this.$http.adornParams({
           'page': this.pageIndex,
@@ -213,26 +221,8 @@ export default {
       })
     }
   },
-  // 生命周期 - 创建完成（可以访问当前 this 实例）
-  created () {
-    this.getMenus()
-  },
-  // 生命周期 - 挂载完成（可以访问 DOM 元素）
-  mounted () {
-  },
-  beforeCreate () {
-  }, // 生命周期 - 创建之前
-  beforeMount () {
-  }, // 生命周期 - 挂载之前
-  beforeUpdate () {
-  }, // 生命周期 - 更新之前
-  updated () {
-  }, // 生命周期 - 更新之后
-  beforeDestroy () {
-  }, // 生命周期 - 销毁之前
-  destroyed () {
-  }, // 生命周期 - 销毁完成
   activated () {
+    this.getDataList()
   } // 如果页面有 keep-alive 缓存功能，这个函数会触发
 }
 </script>
