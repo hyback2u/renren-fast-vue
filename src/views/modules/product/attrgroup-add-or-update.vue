@@ -3,7 +3,8 @@
     :title="!dataForm.attrGroupId ? '新增' : '修改'"
     :close-on-click-modal="false"
     :visible.sync="visible">
-    <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="80px">
+    <el-form :model="dataForm" :rules="dataRule" ref="dataForm"
+             @keyup.enter.native="dataFormSubmit()" label-width="140px">
     <el-form-item label="组名" prop="attrGroupName">
       <el-input v-model="dataForm.attrGroupName" placeholder="组名"></el-input>
     </el-form-item>
