@@ -1,11 +1,9 @@
 <template>
-  <el-tree :data="menus" :props="defaultProps" node-key="catId" ref="menuTree"></el-tree>
+  <el-tree :data="menus" :props="defaultProps" node-key="catId" ref="menuTree"
+           @node-click="nodeClick"></el-tree>
 </template>
 
 <script>
-// 这里可以导入其他文件(比如：组件，工具 js，第三方插件 js，json文件，图片文件等等)
-// 例如：import 《组件名称》 from '《组件路径》';
-
 export default {
   // import 引入的组件需要注入到对象中才能使用
   components: {},
@@ -26,6 +24,22 @@ export default {
   watch: {},
   // 方法集合
   methods: {
+    /**
+     * trigger: tree组件事件触发(节点被点击时的回调)后回调
+     * feature: tree组件自带回调方法
+     *
+     * @param data 传递给data属性的数组中该节点所对应的对象
+     * @param node 节点对应的 Node
+     * @param component 节点组件本身
+     */
+    nodeClick (data, node, component) {
+      console.log('--------> Trigger nodeClick()', data, node, component)
+      console.log('子组件category的节点被点击')
+
+      // 向父组件发送事件, 并携带上这3个数据
+      this.$emit('tree-node-click', data, node, component)
+    },
+
     getMenus () {
       console.log('Trigger getMenus()')
       this.$http({

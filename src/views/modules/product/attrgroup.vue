@@ -1,7 +1,8 @@
 <template>
   <el-row :gutter="20">
     <el-col :span="6">
-      <category></category>
+      <!-- 父组件里面引入了子组件category -->
+      <category @tree-node-click="treeNodeClick"></category>
     </el-col>
     <el-col :span="18">
       <div class="mod-config">
@@ -124,6 +125,19 @@ export default {
   watch: {},
   // 方法集合
   methods: {
+    /**
+     * 父组件感知子组件树节点被点击的事件
+     *
+     * @param data 接收:传递给data属性的数组中该节点所对应的对象
+     * @param node 接收:节点对应的 Node
+     * @param component 接收:节点组件本身
+     */
+    treeNodeClick (data, node, component) {
+      console.log('--------> Trigger treeNodeClick()')
+      console.log('attr-group感知到category节点被点击: ', data, node, component)
+      console.log('刚才被点击的节点菜单的id: ', data.catId)
+    },
+
     // 获取数据列表
     getDataList () {
       this.dataListLoading = true
