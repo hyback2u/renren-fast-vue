@@ -27,6 +27,7 @@ import {
   Checkbox,
   CheckboxButton,
   CheckboxGroup,
+  Image,
   Switch,
   Select,
   Option,
@@ -88,6 +89,7 @@ Vue.use(Menu)
 Vue.use(Submenu)
 Vue.use(MenuItem)
 Vue.use(MenuItemGroup)
+Vue.use(Image)
 Vue.use(Input)
 Vue.use(InputNumber)
 Vue.use(Radio)
