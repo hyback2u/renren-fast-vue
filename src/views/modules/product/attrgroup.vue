@@ -1,9 +1,11 @@
 <template>
   <el-row :gutter="20">
+    <!-- 1、左侧三级分类树形结构 -->
     <el-col :span="6">
-      <!-- 父组件里面引入了子组件category -->
+      <!-- 父组件里面引入了子组件category三级分类 -->
       <category @tree-node-click="treeNodeClick"></category>
     </el-col>
+    <!-- 2、右侧属性分组, 属性分组归类在某个三级分类下 -->
     <el-col :span="18">
       <div class="mod-config">
         <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
@@ -67,17 +69,14 @@
             align="center"
             label="所属分类id">
           </el-table-column>
-          <el-table-column
-            fixed="right"
-            header-align="center"
-            align="center"
-            width="150"
-            label="操作">
+
+          <el-table-column fixed="right" header-align="center" align="center" width="150" label="操作">
             <template slot-scope="scope">
               <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.attrGroupId)">修改</el-button>
               <el-button type="text" size="small" @click="deleteHandle(scope.row.attrGroupId)">删除</el-button>
             </template>
           </el-table-column>
+
         </el-table>
         <el-pagination
           @size-change="sizeChangeHandle"
@@ -185,8 +184,11 @@ export default {
     },
     // 新增 / 修改
     addOrUpdateHandle (id) {
+      // 1、设置显示弹窗
       this.addOrUpdateVisible = true
+      // 2、this.$nextTick渲染的组件完全渲染后, 再调用目标方法
       this.$nextTick(() => {
+        // 把id传过来调用addOrUpdate组件的init()方法
         this.$refs.addOrUpdate.init(id)
       })
     },

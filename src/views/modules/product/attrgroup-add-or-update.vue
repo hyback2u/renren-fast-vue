@@ -1,8 +1,12 @@
 <template>
+  <!-- el-dialog弹窗组件 -->
   <el-dialog
     :title="!dataForm.attrGroupId ? '新增' : '修改'"
     :close-on-click-modal="false"
-    :visible.sync="visible">
+    :visible.sync="visible"
+    @closed="dialogClose">
+
+    <!-- el-form表单组件 -->
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm"
              @keyup.enter.native="dataFormSubmit()" label-width="140px">
       <el-form-item label="组名" prop="attrGroupName">
@@ -17,15 +21,19 @@
       <el-form-item label="组图标" prop="icon">
         <el-input v-model="dataForm.icon" placeholder="组图标"></el-input>
       </el-form-item>
+
       <el-form-item label="所属分类id" prop="catelogId">
         <!--      <el-input v-model="dataForm.catelogId" placeholder="所属分类id"></el-input>-->
         <el-cascader
-          v-model="dataForm.catelogId"
+          placeholder="试试搜索：手机"
+          filterable
+          v-model="dataForm.catelogPath"
           :options="categories"
           :props="props"
         ></el-cascader>
       </el-form-item>
     </el-form>
+
     <span slot="footer" class="dialog-footer">
       <el-button @click="visible = false">取消</el-button>
       <el-button type="primary" @click="dataFormSubmit()">确定</el-button>
@@ -45,13 +53,15 @@ export default {
       // 绑定的菜单
       categories: [],
       visible: false,
+      catelogPath: [],
       dataForm: {
         attrGroupId: 0,
         attrGroupName: '',
         sort: '',
         descript: '',
         icon: '',
-        catelogId: ''
+        catelogId: 0,
+        catelogPath: []
       },
       dataRule: {
         attrGroupName: [
@@ -72,10 +82,25 @@ export default {
       }
     }
   },
+
+  /* created生命周期 */
   created () {
     this.getCategories()
   },
+
+  /* methods方法集合 */
   methods: {
+    /**
+     * trigger: addOrUpdate弹窗关闭时触发
+     * feature: 清空数据, 新增时看到的时新的
+     */
+    dialogClose () {
+      this.dataForm.catelogPath = []
+    },
+    /**
+     * trigger: created生命周期调用
+     * feature: 获取三级分类tree树形结构
+     */
     getCategories () {
       this.$http({
         url: this.$http.adornUrl('/product/category/list/tree'),
@@ -85,7 +110,13 @@ export default {
         this.categories = data.data
       })
     },
+
+    /**
+     * trigger: 属性分组数据点击新增或修改时触发调用init()
+     * feature: x
+     */
     init (id) {
+      // id有数据就用, 否则就用0
       this.dataForm.attrGroupId = id || 0
       this.visible = true
       this.$nextTick(() => {
@@ -102,6 +133,8 @@ export default {
               this.dataForm.descript = data.attrGroup.descript
               this.dataForm.icon = data.attrGroup.icon
               this.dataForm.catelogId = data.attrGroup.catelogId
+              // 查出catelogId完整的路径
+              this.dataForm.catelogPath = data.attrGroup.catelogPath
             }
           })
         }
@@ -120,7 +153,7 @@ export default {
               'sort': this.dataForm.sort,
               'descript': this.dataForm.descript,
               'icon': this.dataForm.icon,
-              'catelogId': this.dataForm.catelogId
+              'catelogId': this.dataForm.catelogPath[this.dataForm.catelogPath.length - 1]
             })
           }).then(({data}) => {
             if (data && data.code === 0) {
