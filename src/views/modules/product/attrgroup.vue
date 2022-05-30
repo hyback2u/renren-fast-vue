@@ -1,11 +1,8 @@
 <template>
   <el-row :gutter="20">
-    <!-- 1、左侧三级分类树形结构 -->
     <el-col :span="6">
-      <!-- 父组件里面引入了子组件category三级分类 -->
-      <category @tree-node-click="treeNodeClick"></category>
+      <category @tree-node-click="treenodeclick"></category>
     </el-col>
-    <!-- 2、右侧属性分组, 属性分组归类在某个三级分类下 -->
     <el-col :span="18">
       <div class="mod-config">
         <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
@@ -14,10 +11,19 @@
           </el-form-item>
           <el-form-item>
             <el-button @click="getDataList()">查询</el-button>
-            <el-button v-if="isAuth('product:attrgroup:save')" type="primary" @click="addOrUpdateHandle()">新增
+            <el-button type="success" @click="getAllDataList()">查询全部</el-button>
+            <el-button
+              v-if="isAuth('product:attrgroup:save')"
+              type="primary"
+              @click="addOrUpdateHandle()"
+            >新增
             </el-button>
-            <el-button v-if="isAuth('product:attrgroup:delete')" type="danger" @click="deleteHandle()"
-                       :disabled="dataListSelections.length <= 0">批量删除
+            <el-button
+              v-if="isAuth('product:attrgroup:delete')"
+              type="danger"
+              @click="deleteHandle()"
+              :disabled="dataListSelections.length <= 0"
+            >批量删除
             </el-button>
           </el-form-item>
         </el-form>
@@ -26,57 +32,33 @@
           border
           v-loading="dataListLoading"
           @selection-change="selectionChangeHandle"
-          style="width: 100%;">
+          style="width: 100%;"
+        >
+          <el-table-column type="selection" header-align="center" align="center" width="50"></el-table-column>
+          <el-table-column prop="attrGroupId" header-align="center" align="center" label="分组id"></el-table-column>
+          <el-table-column prop="attrGroupName" header-align="center" align="center" label="组名"></el-table-column>
+          <el-table-column prop="sort" header-align="center" align="center" label="排序"></el-table-column>
+          <el-table-column prop="descript" header-align="center" align="center" label="描述"></el-table-column>
+          <el-table-column prop="icon" header-align="center" align="center" label="组图标"></el-table-column>
+          <el-table-column prop="catelogId" header-align="center" align="center" label="所属分类id"></el-table-column>
           <el-table-column
-            type="selection"
+            fixed="right"
             header-align="center"
             align="center"
-            width="50">
-          </el-table-column>
-          <el-table-column
-            prop="attrGroupId"
-            header-align="center"
-            align="center"
-            label="分组id">
-          </el-table-column>
-          <el-table-column
-            prop="attrGroupName"
-            header-align="center"
-            align="center"
-            label="组名">
-          </el-table-column>
-          <el-table-column
-            prop="sort"
-            header-align="center"
-            align="center"
-            label="排序">
-          </el-table-column>
-          <el-table-column
-            prop="descript"
-            header-align="center"
-            align="center"
-            label="描述">
-          </el-table-column>
-          <el-table-column
-            prop="icon"
-            header-align="center"
-            align="center"
-            label="组图标">
-          </el-table-column>
-          <el-table-column
-            prop="catelogId"
-            header-align="center"
-            align="center"
-            label="所属分类id">
-          </el-table-column>
-
-          <el-table-column fixed="right" header-align="center" align="center" width="150" label="操作">
+            width="150"
+            label="操作"
+          >
             <template slot-scope="scope">
-              <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.attrGroupId)">修改</el-button>
+              <el-button type="text" size="small" @click="relationHandle(scope.row.attrGroupId)">关联</el-button>
+              <el-button
+                type="text"
+                size="small"
+                @click="addOrUpdateHandle(scope.row.attrGroupId)"
+              >修改
+              </el-button>
               <el-button type="text" size="small" @click="deleteHandle(scope.row.attrGroupId)">删除</el-button>
             </template>
           </el-table-column>
-
         </el-table>
         <el-pagination
           @size-change="sizeChangeHandle"
@@ -85,24 +67,25 @@
           :page-sizes="[10, 20, 50, 100]"
           :page-size="pageSize"
           :total="totalPage"
-          layout="total, sizes, prev, pager, next, jumper">
-        </el-pagination>
+          layout="total, sizes, prev, pager, next, jumper"
+        ></el-pagination>
         <!-- 弹窗, 新增 / 修改 -->
         <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
+
+        <!-- 修改关联关系 -->
+        <relation-update v-if="relationVisible" ref="relationUpdate" @refreshData="getDataList"></relation-update>
       </div>
     </el-col>
   </el-row>
 </template>
 
 <script>
-// 这里可以导入其他文件(比如：组件，工具 js，第三方插件 js，json文件，图片文件等等)
-// 例如：import 《组件名称》 from '《组件路径》';
 import Category from '../common/category'
 import AddOrUpdate from './attrgroup-add-or-update'
+import RelationUpdate from './attr-group-relation'
 
 export default {
-  // import 引入的组件需要注入到对象中才能使用
-  components: {Category, AddOrUpdate},
+  components: {Category, AddOrUpdate, RelationUpdate},
   props: {},
   data () {
     return {
@@ -116,35 +99,32 @@ export default {
       totalPage: 0,
       dataListLoading: false,
       dataListSelections: [],
-      addOrUpdateVisible: false
+      addOrUpdateVisible: false,
+      relationVisible: false
     }
   },
-  // 计算属性 类似于 data 概念
-  computed: {},
-  // 监控 data 中的数据变化
-  watch: {},
-  // 方法集合
+  activated () {
+    this.getDataList()
+  },
   methods: {
-    /**
-     * 父组件感知子组件树节点被点击的事件
-     *
-     * @param data 接收:传递给data属性的数组中该节点所对应的对象
-     * @param node 接收:节点对应的 Node
-     * @param component 接收:节点组件本身
-     */
-    treeNodeClick (data, node, component) {
-      console.log('--------> Trigger treeNodeClick()')
-      console.log('attr-group感知到category节点被点击: ', data, node, component)
-      console.log('刚才被点击的节点菜单的id: ', data.catId)
-
-      // 点击三级分类, 才会查
+    // 处理分组与属性的关联
+    relationHandle (groupId) {
+      this.relationVisible = true
+      this.$nextTick(() => {
+        this.$refs.relationUpdate.init(groupId)
+      })
+    },
+    // 感知树节点被点击
+    treenodeclick (data, node, component) {
       if (node.level === 3) {
         this.catId = data.catId
-        // 重新调用查询
-        this.getDataList()
+        this.getDataList() // 重新查询
       }
     },
-
+    getAllDataList () {
+      this.catId = 0
+      this.getDataList()
+    },
     // 获取数据列表
     getDataList () {
       this.dataListLoading = true
@@ -152,9 +132,9 @@ export default {
         url: this.$http.adornUrl(`/product/attrgroup/list/${this.catId}`),
         method: 'get',
         params: this.$http.adornParams({
-          'page': this.pageIndex,
-          'limit': this.pageSize,
-          'key': this.dataForm.key
+          page: this.pageIndex,
+          limit: this.pageSize,
+          key: this.dataForm.key
         })
       }).then(({data}) => {
         if (data && data.code === 0) {
@@ -184,24 +164,27 @@ export default {
     },
     // 新增 / 修改
     addOrUpdateHandle (id) {
-      // 1、设置显示弹窗
       this.addOrUpdateVisible = true
-      // 2、this.$nextTick渲染的组件完全渲染后, 再调用目标方法
       this.$nextTick(() => {
-        // 把id传过来调用addOrUpdate组件的init()方法
         this.$refs.addOrUpdate.init(id)
       })
     },
     // 删除
     deleteHandle (id) {
-      var ids = id ? [id] : this.dataListSelections.map(item => {
-        return item.attrGroupId
-      })
-      this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '删除' : '批量删除'}]操作?`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
+      var ids = id
+        ? [id]
+        : this.dataListSelections.map(item => {
+          return item.attrGroupId
+        })
+      this.$confirm(
+        `确定对[id=${ids.join(',')}]进行[${id ? '删除' : '批量删除'}]操作?`,
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      ).then(() => {
         this.$http({
           url: this.$http.adornUrl('/product/attrgroup/delete'),
           method: 'post',
@@ -222,11 +205,8 @@ export default {
         })
       })
     }
-  },
-  activated () {
-    this.getDataList()
-  } // 如果页面有 keep-alive 缓存功能，这个函数会触发
+  }
 }
 </script>
-<style lang='scss' scoped>
+<style>
 </style>

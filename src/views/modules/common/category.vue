@@ -13,7 +13,7 @@ export default {
       // 这里，真正的数据要发送请求从后台数据库获取
       menus: [],
       defaultProps: {
-        children: 'childCategoryEntity',
+        children: 'children',
         label: 'name'
       }
     }
