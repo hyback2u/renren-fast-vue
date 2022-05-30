@@ -81,7 +81,7 @@ export default {
       // 弹窗提示消息
       dialogTitle: '',
       defaultProps: {
-        children: 'childCategoryEntity',
+        children: 'children',
         label: 'name'
       }
     }
@@ -181,9 +181,9 @@ export default {
 
       // 2、当前拖拽节点的最新顺序
       // if (dropType == "inner") {
-      //   siblings = dropNode.childCategoryEntity;
+      //   siblings = dropNode.children;
       // } else {
-      //   siblings = dropNode.parent.childCategoryEntity;
+      //   siblings = dropNode.parent.children;
       // }
       // 排序
       for (let i = 0; i < siblings.length; i++) {
