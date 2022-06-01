@@ -23,7 +23,7 @@
               style="width: 100px; height: 80px"
               :src="scope.row.logo"
           fit="fill"></el-image>-->
-          <img :src="scope.row.logo" style="width: 100px; height: 80px"/>
+          <img :src="scope.row.logo" style="width: 110px; height: 90px" alt="加载失败">
         </template>
       </el-table-column>
       <el-table-column prop="descript" header-align="center" align="center" label="介绍"></el-table-column>
