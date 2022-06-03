@@ -10,7 +10,8 @@
           <el-step title="保存完成"></el-step>
         </el-steps>
       </el-col>
-      <el-col :span="24" v-show="step===0">
+
+      <el-col :span="24" v-show="step==0">
         <el-card class="box-card" style="width:80%;margin:20px auto">
           <el-form ref="spuBaseForm" :model="spu" label-width="120px" :rules="spuBaseInfoRules">
             <el-form-item label="商品名称" prop="spuName">
@@ -61,6 +62,7 @@
           </el-form>
         </el-card>
       </el-col>
+
       <el-col :span="24" v-show="step==1">
         <el-card class="box-card" style="width:80%;margin:20px auto">
           <el-tabs tab-position="left" style="width:98%">
@@ -69,7 +71,6 @@
               v-for="(group,gidx) in dataResp.attrGroups"
               :key="group.attrGroupId"
             >
-              <!-- 遍历属性,每个tab-pane对应一个表单，每个属性是一个表单项  spu.baseAttrs[0] = [{attrId:xx,val:}]-->
               <el-form ref="form" :model="spu">
                 <el-form-item
                   :label="attr.attrName"
@@ -106,12 +107,14 @@
               </el-form>
             </el-tab-pane>
           </el-tabs>
+
           <div style="margin:auto">
             <el-button type="primary" @click="step = 0">上一步</el-button>
             <el-button type="success" @click="generateSaleAttrs">下一步：设置销售属性</el-button>
           </div>
         </el-card>
       </el-col>
+
       <el-col :span="24" v-show="step==2">
         <el-card class="box-card" style="width:80%;margin:20px auto">
           <el-card class="box-card">
@@ -363,7 +366,6 @@ export default {
       uploadImages: [],
       step: 0,
       spu: {
-        // 要提交的数据
         spuName: '',
         spuDescription: '',
         catalogId: 0,
@@ -422,6 +424,7 @@ export default {
       inputValue: []
     }
   },
+  // 计算属性 类似于data概念
   computed: {},
   // 监控data中的数据变化
   watch: {
@@ -499,7 +502,7 @@ export default {
       row.images[index].defaultImg = 1 // 修改标志位;
       // 修改其他人的标志位
       row.images.forEach((item, idx) => {
-        if (idx !== index) {
+        if (idx != index) {
           row.images[idx].defaultImg = 0
         }
       })
@@ -508,7 +511,7 @@ export default {
       let inputValue = this.inputValue[idx].val
       if (inputValue) {
         // this.dynamicTags.push(inputValue);
-        if (this.dataResp.saleAttrs[idx].valueSelect === '') {
+        if (this.dataResp.saleAttrs[idx].valueSelect == '') {
           this.dataResp.saleAttrs[idx].valueSelect = inputValue
         } else {
           this.dataResp.saleAttrs[idx].valueSelect += ';' + inputValue
@@ -590,7 +593,7 @@ export default {
         let memberPrices = []
         if (this.dataResp.memberLevels.length > 0) {
           for (let i = 0; i < this.dataResp.memberLevels.length; i++) {
-            if (this.dataResp.memberLevels[i].priviledgeMemberPrice === 1) {
+            if (this.dataResp.memberLevels[i].priviledgeMemberPrice == 1) {
               memberPrices.push({
                 id: this.dataResp.memberLevels[i].id,
                 name: this.dataResp.memberLevels[i].name,
@@ -599,6 +602,7 @@ export default {
             }
           }
         }
+        // ;descaridx，判断如果之前有就用之前的值;
         let res = this.hasAndReturnSku(this.spu.skus, descar)
         if (res === null) {
           skus.push({
@@ -629,7 +633,7 @@ export default {
       let res = null
       if (skus.length > 0) {
         for (let i = 0; i < skus.length; i++) {
-          if (skus[i].descar.join(' ') === descar.join(' ')) {
+          if (skus[i].descar.join(' ') == descar.join(' ')) {
             res = skus[i]
           }
         }
@@ -673,8 +677,10 @@ export default {
           params: this.$http.adornParams({})
         }).then(({data}) => {
           // 先对表单的baseAttrs进行初始化
+          console.log('return data: ', data.data)
           data.data.forEach(item => {
             let attrArray = []
+            console.log('attrs: ', item.attrs)
             item.attrs.forEach(attr => {
               attrArray.push({
                 attrId: attr.attrId,
@@ -703,7 +709,7 @@ export default {
             method: 'post',
             data: this.$http.adornData(this.spu, false)
           }).then(({data}) => {
-            if (data.code === 0) {
+            if (data.code == 0) {
               this.$message({
                 type: 'success',
                 message: '新增商品成功!'
@@ -789,7 +795,14 @@ export default {
     })
     this.getMemberLevels()
   },
-
+  beforeCreate () {
+  },
+  beforeMount () {
+  },
+  beforeUpdate () {
+  },
+  updated () {
+  },
   beforeDestroy () {
     PubSub.unsubscribe(this.catPathSub)
     PubSub.unsubscribe(this.brandIdSub)
